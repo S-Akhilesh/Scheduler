@@ -1,0 +1,39 @@
+.scheduler {
+  width: 80%;
+  margin: 0 auto;
+  min-height: 100vh;
+  margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+form,
+.calender {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+}
+label {
+  width: 350px;
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+input,
+select {
+  border: 1px solid gray;
+  outline: none;
+  padding: 10px;
+}
+
+.react-calendar__navigation__label,
+.react-calendar__navigation__arrow {
+  color: white !important;
+  font-size: large;
+  background-color: brown !important;
+}

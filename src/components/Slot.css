@@ -1,0 +1,31 @@
+.slot {
+  width: 80%;
+  margin: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.slot__timings {
+  width: 50%;
+  margin: 10px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.slot__time {
+  width: 80px;
+  opacity: 0.5;
+  border: 1px solid gray;
+  color: gray;
+  outline: none;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: white;
+}
