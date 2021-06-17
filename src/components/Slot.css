@@ -21,6 +21,7 @@
 
 .slot__time {
   width: 80px;
+  cursor: pointer;
   opacity: 0.5;
   border: 1px solid gray;
   color: gray;
@@ -28,4 +29,8 @@
   padding: 5px;
   border-radius: 5px;
   background-color: white;
+}
+
+.slot__time:active {
+  border: 1px solid black;
 }
