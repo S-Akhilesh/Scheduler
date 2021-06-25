@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import "./Scheduler.css";
 import Calendar from "react-calendar";
 import Slot from "./Slot";
+import { gapi } from "gapi-script";
 import Meet from "./Meet";
+import { API_KEY, CLIENT_ID } from "../config";
+
 const Scheduler = () => {
   const [value, setValue] = useState("Training Room");
   const [slot, setSlot] = useState("");
@@ -11,23 +14,79 @@ const Scheduler = () => {
   const [date, setDate] = useState(new Date());
   const [meets, setMeets] = useState([]);
 
+  var DISCOVERY_DOCS = [
+    "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+  ];
+  var SCOPES = "https://www.googleapis.com/auth/calendar.events";
+
+  const setter = (dd) => setDate(dd);
+
   useEffect(() => {
     var str = date.toString();
     var mt = str.match(/ [0-9][0-9]:[0-9][0-9]:[0-9][0-9] /);
     var res = str.replace(mt[0].toString(), ` ${slot} `);
     const dd = new Date(res);
-    setDate(dd);
+    setter(dd);
   }, [slot, meets]);
 
+  // const handleSubmit = () => {
+  //   const meet = {
+  //     organisedBy: `${name}`,
+  //     meetingDesc: `${desc}`,
+  //     Date: `${date}`,
+  //     venue: `${value}`,
+  //   };
+
+  //   // setMeets([...meets, meet]);
+  //   console.log(meets);
+  // };
+
   const handleSubmit = () => {
-    const meet = {
-      organisedBy: `${name}`,
-      meetingDesc: `${desc}`,
-      Date: `${date}`,
-      venue: `${value}`,
+    // setLoading(true);
+    const event = {
+      title: name,
+      summary: value,
+      location: "Google Meet",
+      description: desc,
+      start: {
+        dateTime: date,
+        timeZone: "Asia/Calcutta",
+      },
+      end: {
+        dateTime: date,
+        timeZone: "Asia/Calcutta",
+      },
+      recurrence: ["RRULE:FREQ=DAILY;COUNT=1"],
+      attendees: [
+        { email: "lpage@example.com" },
+        { email: "sbrin@example.com" },
+      ],
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: "email", minutes: 24 * 60 },
+          { method: "popup", minutes: 10 },
+        ],
+      },
     };
-    setMeets([...meets, meet]);
-    console.log(meets);
+    gapi.load("client:auth2", () => {
+      gapi.client.init({
+        apiKey: API_KEY,
+        clientId: CLIENT_ID,
+        discoveryDocs: DISCOVERY_DOCS,
+        scope: SCOPES,
+      });
+      gapi.client.load("calendar", "v3");
+      Promise.resolve(gapi.auth2.getAuthInstance().signIn());
+      var request = gapi.client.calendar.events.insert({
+        calendarId: "primary",
+        resource: event,
+      });
+      request.execute((event) => {
+        // setEventLink(event.htmlLink);
+        window.open(event.htmlLink);
+      });
+    });
   };
 
   const handleChange = (e) => {
