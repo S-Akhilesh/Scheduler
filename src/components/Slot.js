@@ -1,6 +1,6 @@
 import React from "react";
 import "./Slot.css";
-const Slot = ({ setSlot }) => {
+const Slot = ({ setSlot, selected, setSelected }) => {
   const timings = [
     { time: "10.00 AM", value: "10:00:00" },
     { time: "10.30 AM", value: "10:30:00" },
@@ -20,6 +20,7 @@ const Slot = ({ setSlot }) => {
     { time: "5.30 PM", value: "17:30:00" },
     { time: "6.00 PM", value: "18:00:00" },
   ];
+
   return (
     <div className="slot">
       <h3>Please select your preferred slot.</h3>
@@ -27,8 +28,11 @@ const Slot = ({ setSlot }) => {
         {timings.map((t, id) => (
           <button
             key={id}
-            className="slot__time"
-            onClick={() => setSlot(t.value)}
+            className={selected === id ? "slot__time active" : "slot__time"}
+            onClick={() => {
+              setSlot(t.value);
+              setSelected(id);
+            }}
             value={t.time}
           >
             {t.time}

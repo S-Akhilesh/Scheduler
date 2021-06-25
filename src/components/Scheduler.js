@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./Scheduler.css";
 import Calendar from "react-calendar";
 import Slot from "./Slot";
 import { gapi } from "gapi-script";
-import Meet from "./Meet";
 import { API_KEY, CLIENT_ID } from "../config";
 
 const Scheduler = () => {
@@ -12,81 +11,69 @@ const Scheduler = () => {
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState(new Date());
-  const [meets, setMeets] = useState([]);
-
+  const [selected, setSelected] = useState(-1);
+  const [loading, setLoading] = useState(false);
   var DISCOVERY_DOCS = [
     "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
   ];
   var SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
-  const setter = (dd) => setDate(dd);
-
-  useEffect(() => {
-    var str = date.toString();
-    var mt = str.match(/ [0-9][0-9]:[0-9][0-9]:[0-9][0-9] /);
-    var res = str.replace(mt[0].toString(), ` ${slot} `);
-    const dd = new Date(res);
-    setter(dd);
-  }, [slot, meets]);
-
-  // const handleSubmit = () => {
-  //   const meet = {
-  //     organisedBy: `${name}`,
-  //     meetingDesc: `${desc}`,
-  //     Date: `${date}`,
-  //     venue: `${value}`,
-  //   };
-
-  //   // setMeets([...meets, meet]);
-  //   console.log(meets);
-  // };
+  var str = date.toString();
+  var mt = str.match(/ [0-9][0-9]:[0-9][0-9]:[0-9][0-9] /);
+  var res = str.replace(mt[0].toString(), ` ${slot} `);
+  var stDate = new Date(res);
 
   const handleSubmit = () => {
-    // setLoading(true);
-    const event = {
-      title: name,
-      summary: value,
-      location: "Google Meet",
-      description: desc,
-      start: {
-        dateTime: date,
-        timeZone: "Asia/Calcutta",
-      },
-      end: {
-        dateTime: date,
-        timeZone: "Asia/Calcutta",
-      },
-      recurrence: ["RRULE:FREQ=DAILY;COUNT=1"],
-      attendees: [
-        { email: "lpage@example.com" },
-        { email: "sbrin@example.com" },
-      ],
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: "email", minutes: 24 * 60 },
-          { method: "popup", minutes: 10 },
-        ],
-      },
-    };
-    gapi.load("client:auth2", () => {
-      gapi.client.init({
-        apiKey: API_KEY,
-        clientId: CLIENT_ID,
-        discoveryDocs: DISCOVERY_DOCS,
-        scope: SCOPES,
+    if (name === "" || desc === "" || selected === -1) {
+      alert("Please fill all the fields.");
+    } else {
+      setLoading(true);
+      const event = {
+        title: "Affle Test Meet",
+        summary: name,
+        location: value,
+        description: desc,
+        start: {
+          dateTime: stDate,
+          timeZone: "Asia/Calcutta",
+        },
+        end: {
+          dateTime: stDate,
+          timeZone: "Asia/Calcutta",
+        },
+        recurrence: ["RRULE:FREQ=DAILY;COUNT=1"],
+        attendees: [{ email: "toakhilesh48@gmail.com" }],
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: "email", minutes: 24 * 60 },
+            { method: "popup", minutes: 10 },
+          ],
+        },
+      };
+      gapi.load("client:auth2", async () => {
+        await gapi.client.init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          discoveryDocs: DISCOVERY_DOCS,
+          scope: SCOPES,
+        });
+        gapi.client.load("calendar", "v3");
+        Promise.resolve(gapi.auth2.getAuthInstance().signIn());
+        var request = gapi.client.calendar.events.insert({
+          calendarId: "primary",
+          resource: event,
+        });
+        request.execute((event) => {
+          window.open(event.htmlLink);
+        });
       });
-      gapi.client.load("calendar", "v3");
-      Promise.resolve(gapi.auth2.getAuthInstance().signIn());
-      var request = gapi.client.calendar.events.insert({
-        calendarId: "primary",
-        resource: event,
-      });
-      request.execute((event) => {
-        // setEventLink(event.htmlLink);
-        window.open(event.htmlLink);
-      });
-    });
+      setLoading(false);
+      setDate(new Date());
+      setDesc("");
+      setName("");
+      setSelected(-1);
+    }
   };
 
   const handleChange = (e) => {
@@ -129,18 +116,18 @@ const Scheduler = () => {
           <div className="calender">
             <Calendar onChange={setDate} value={date} />
           </div>
-          <Slot setSlot={setSlot} />
+          <Slot
+            setSlot={setSlot}
+            selected={selected}
+            setSelected={setSelected}
+          />
           <div className="btnBook">
-            <button onClick={handleSubmit}>Book Slot</button>
+            {loading ? (
+              <div>Please Wait..</div>
+            ) : (
+              <button onClick={handleSubmit}>Book Slot</button>
+            )}
           </div>
-        </div>
-      </div>
-      <div className="bookedMeet">
-        <h2>Alloted Meetings</h2>
-        <div className="meetings">
-          {meets.map((m, id) => (
-            <Meet key={id} obj={m} />
-          ))}
         </div>
       </div>
     </div>
